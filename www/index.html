@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>barrio seguro</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src="http://www.mapquestapi.com/sdk/leaflet/v2.s/mq-map.js?key=mst4dlCgvUmg27c9dAtkokqZnCWG7D5S"></script>
+    <script src="http://www.mapquestapi.com/sdk/leaflet/v2.s/mq-geocoding.js?key=mst4dlCgvUmg27c9dAtkokqZnCWG7D5S"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+    <style type="text/css">
+      html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+      #map { width: 100%; height: 100%; }
+      .menubar { padding: 10px; margin: 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map = L.map('map', { layers: MQ.mapLayer() });
+      MQ.geocode({ 
+        map: map,
+        boundingBox: { ul: {lat: -31.305327, lng: -64.322071}, lr: {lat: -31.484679, lng: -64.083119} } 
+      }).search('Córdoba, Córdoba, Argentina');
+      var menubar = L.control({ position: 'topright' });
+      menubar.onAdd = function(map) {
+        this._div = L.DomUtil.create('div', 'menubar');
+        var img = '<img src=\"images/logo.png\"><br>';
+        var btn1 = '<button id="reportarIncidente">Reportar incidente</button><br>';
+        var btn2 = '<select id="filtro"><option>(Mostrar todos)</option><option>Robos</option></select>';
+        this._div.innerHTML = "<div style='padding: 10px; background: rgba(0, 0, 0, 0.5);'>" + img + btn1 + btn2 + "</div>";
+        return this._div;
+      };
+      menubar.addTo(map);
+      document.getElementById('reportarIncidente').onclick = function() {
+        var where = prompt('¿Dónde ocurrió el hecho? Ingrese el nombre de la calle al menos, y si es posible, una'
+        + ' altura aproximada.');
+        MQ.geocode({
+          boundingBox: { ul: {lat: -31.305327, lng: -64.322071}, lr: {lat: -31.484679, lng: -64.083119} }          
+        }).search(where + ', Córdoba City, Córdoba, Argentina').on('success', function(e) {
+          console.log(e.result);
+          var best = e.result.best,
+            latlng = best.latlng;
+
+          map.setView(latlng, 15);
+
+          var popup = '<div style="font-size:115%;">Reportando incidente para:<br><strong>' + best.street + '</strong></div>'
+          + '<p>¿Ud. fue víctima o testigo?<br><select id="actor">'
+          + '<option value="V">Víctima</option><option value="T">Testigo</option></select>'
+          + '<p>¿Qué sucedió?<br><select id="evento">'
+          + '<option value="R">Robo</option>'
+          + '<option value="A">Asalto violento</option>'
+          + '<option value="V">Violación</option>'
+          + '<option value="M">Merodeo / Actividad sospechosa</option>'
+          + '</select>'
+          + '<p>¿Cuándo sucedió? (Fecha y hora aproximados)<br>'
+          + '<input type="date" placeholder="Fecha" value="' + moment().format('YYYY-MM-DD') + '" id="cuandoFecha">'
+          + '<input type="time" placeholder="Hora" id="cuandoHora"></p>'
+          + '<p>Escriba cualquier información que pueda ayudar a otros vecinos'
+          + ' sobre lo que aconteció:<br><textarea rows="7" cols="40" id="datos"></textarea></p>'
+          + '<p>Si lo desea, ingrese a continuación su edad y su género.<br>'
+          + '<input type="number" placeholder="Edad" id="edad"><select id="genero">'
+          + '<option value="F">Femenino</option><option value="M">Masculino</option>'
+          + '<option value="?">Otro / No informar</option></select></p>'
+          + '<button onclick="confirmarRegistro()" id="confirmarRegistro">Confirmar</button><button onclick="cancelarRegistro()" id="cancelarRegistro">Cancelar</button>';
+
+          window.newMarker = L.marker([ latlng.lat, latlng.lng ])
+            .addTo(map)
+            .bindPopup(popup)
+            .openPopup()
+        });
+      };
+      document.getElementById('filtro').onchange = function() {
+        
+      };
+      function confirmarRegistro() { 
+        
+      }
+      function cancelarRegistro() {
+        window.newMarker.closePopup();
+        map.removeLayer(window.newMarker);
+      }
+    </script>
+  </body>
+</html>
