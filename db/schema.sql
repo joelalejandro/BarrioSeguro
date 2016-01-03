@@ -19,7 +19,10 @@ create table t_incidentes (
   fecha_incidente datetime not null,
   edad int(3) null,
   sexo enum('M', 'F', 'O') not null,
-  descripcion_hechos text not null  
+  descripcion_hechos text not null,
+  direccion char(255) not null,
+  latitud decimal not null,
+  longitud decimal not null
 )
 engine=innodb
 charset=utf8
@@ -37,3 +40,9 @@ create index idx_inc_edse on t_incidentes (edad, sexo);
 insert into t_tipos_incidente (id_tipo_incidente, n_tipo_incidente)
 values ('RO', 'Robo'), ('SE', 'Secuestro'), ('AF', 'Agresión física'),
 ('HO', 'Homicidio'), ('VA', 'Vandalismo'), ('VI', 'Violación');
+
+create view vt_incidentes as
+select i.*, ti.n_tipo_incidente
+  from t_incidentes i,
+	   t_tipos_incidente ti
+ where i.id_tipo_incidente = ti.id_tipo_incidente;
